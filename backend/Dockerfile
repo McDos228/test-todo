@@ -1,32 +1,33 @@
 # Stage 1: Build
 FROM node:24.13.0-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Install ALL dependencies (including devDependencies for the build)
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
-# Copy source code
 COPY . .
+
+# IMPORTANT: You must trigger the build process (usually creates the /dist folder)
+RUN npm run build
 
 # Stage 2: Production
 FROM node:24.13.0-alpine
 
-# Set working directory
 WORKDIR /app
 
-
-# Copy only necessary files from the builder stage
-COPY --from=builder /app /app
-
-# Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Expose the port the app runs on
+# Copy only the compiled code and production dependencies
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
+
+# Install ONLY production dependencies to keep the image small
+RUN npm ci --omit=dev
+
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main"]
