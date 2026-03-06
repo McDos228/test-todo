@@ -1,31 +1,44 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: postgres:15
+  # Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: todo
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: my_database
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # Backend (NestJS)
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nest_api
+    restart: always
     ports:
-      - "8080:8080"
+      - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/todo
-      FRONTEND_URL: http://localhost
+      DATABASE_URL: postgresql://user:password@db:5432/my_database
+      NODE_ENV: development
     depends_on:
-      - postgres
+      - db
 
+  # Frontend (React-Vite)
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react_client
+    restart: always
     ports:
-      - "3000:80"
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3000
     depends_on:
       - backend
 

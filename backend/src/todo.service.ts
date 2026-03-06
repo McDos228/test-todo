@@ -1,31 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class TodoService {
+  constructor(private prisma: PrismaService) {}
+
   findAll() {
-    return prisma.todo.findMany({
+    return this.prisma.todo.findMany({
       orderBy: { createdAt: 'desc' },
     });
   }
 
   create(title: string) {
-    return prisma.todo.create({
+    return this.prisma.todo.create({
       data: { title },
     });
   }
 
   toggle(id: number) {
-    return prisma.todo.update({
+    return this.prisma.todo.update({
       where: { id },
-      data: { completed: { not: true } },
+      data: { completed: true },
     });
   }
 
   delete(id: number) {
-    return prisma.todo.delete({
+    return this.prisma.todo.delete({
       where: { id },
     });
   }

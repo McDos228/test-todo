@@ -1,5 +1,4 @@
-# ---- Build stage ----
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -8,13 +7,7 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+EXPOSE 5173
 
-# ---- Production stage ----
-FROM nginx:alpine
-
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Vite needs --host to be accessible from outside the container
+CMD ["npm", "run", "dev", "--", "--host"]
