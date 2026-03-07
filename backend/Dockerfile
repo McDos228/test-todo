@@ -5,7 +5,12 @@ WORKDIR /app
 
 # Install ALL dependencies (including devDependencies for the build)
 COPY package.json package-lock.json ./
+COPY prisma ./prisma/ 
+
 RUN npm ci
+
+# Generate the Prisma Client
+RUN npx prisma generate
 
 COPY . .
 
@@ -21,9 +26,12 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 # Copy only the compiled code and production dependencies
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/package-lock.json ./package-lock.json
+COPY --from=builder /app/prisma ./prisma
 
 # Install ONLY production dependencies to keep the image small
 RUN npm ci --omit=dev
