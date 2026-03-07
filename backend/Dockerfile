@@ -36,6 +36,8 @@ COPY --from=builder /app/prisma ./prisma
 # Install ONLY production dependencies to keep the image small
 RUN npm ci --omit=dev
 
+RUN npx prisma generate
+
 EXPOSE 3000
 
 CMD ["node", "dist/src/main"]
