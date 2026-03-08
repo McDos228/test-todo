@@ -35,4 +35,4 @@ RUN npx prisma generate
 EXPOSE 3000
 
 # Verify your build output path (dist/main or dist/src/main)
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
